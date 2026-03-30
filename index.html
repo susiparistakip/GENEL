@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Altyapı Takip Paneli</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-locked">
+
+    <div class="login-bg-grid"></div>
+    <div class="login-bg-orb orb-1"></div>
+    <div class="login-bg-orb orb-2"></div>
+    <div class="topology-blur">
+      <div class="topo-rack rack-a"></div>
+      <div class="topo-rack rack-b"></div>
+      <div class="topo-line l1"></div>
+      <div class="topo-line l2"></div>
+      <div class="topo-line l3"></div>
+      <div class="topo-node n1"></div>
+      <div class="topo-node n2"></div>
+      <div class="topo-node n3"></div>
+    </div>
+
+    <section id="setupScreen" class="screen setup-screen hidden">
+      <div class="setup-shell">
+        <div class="setup-card">
+          <div class="setup-badge">FIRST-TIME SETUP</div>
+          <h1>PIN oluştur</h1>
+          <p>Bu cihazda ilk kullanım algılandı. Devam etmek için 4 haneli bir yönetici PIN kodu belirle.</p>
+
+          <div class="setup-group">
+            <div class="setup-label">Yeni PIN</div>
+            <div class="pin-boxes setup-pin" id="createPinBoxes">
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+            </div>
+          </div>
+
+          <div class="setup-group">
+            <div class="setup-label">PIN tekrar</div>
+            <div class="pin-boxes setup-pin" id="confirmPinBoxes">
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+              <div class="pin-cell"><span></span></div>
+            </div>
+          </div>
+
+          <div id="setupStatus" class="status-text">4 haneli PIN oluştur</div>
+
+          <div class="keypad compact" id="setupKeypad">
+            <button class="key" data-key="1">1</button>
+            <button class="key" data-key="2">2</button>
+            <button class="key" data-key="3">3</button>
+            <button class="key" data-key="4">4</button>
+            <button class="key" data-key="5">5</button>
+            <button class="key" data-key="6">6</button>
+            <button class="key" data-key="7">7</button>
+            <button class="key" data-key="8">8</button>
+            <button class="key" data-key="9">9</button>
+            <button class="key key-soft" data-action="clear">Temizle</button>
+            <button class="key" data-key="0">0</button>
+            <button class="key key-soft" data-action="delete">Sil</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loginScreen" class="screen login-screen hidden">
+      <div class="login-shell">
+        <aside class="system-panel desktop-only">
+          <div class="eyebrow">NETWORK SECURITY CONSOLE</div>
+          <h1>Secure Access Gateway</h1>
+          <p class="lead">Yetkili erişim gereklidir. Sistem kaynakları korunuyor, oturum kimlik doğrulaması bekleniyor.</p>
+          <div class="signal-row"><span class="signal-dot"></span><span>AUTH CHANNEL ACTIVE</span></div>
+          <div class="terminal-box">
+            <div>&gt; Secure tunnel initialized</div>
+            <div>&gt; Device fingerprint verified</div>
+            <div>&gt; Awaiting 4-digit access PIN...</div>
+          </div>
+          <div class="desktop-metrics">
+            <div class="metric-card"><div class="metric-label">Security</div><div class="metric-value ok">ARMED</div></div>
+            <div class="metric-card"><div class="metric-label">Mode</div><div class="metric-value">LOCAL</div></div>
+          </div>
+        </aside>
+
+        <main class="auth-panel">
+          <div class="mobile-head mobile-only">
+            <div class="mobile-badge">SECURE LOGIN</div>
+            <div class="mobile-title">PIN Access</div>
+            <div class="mobile-subtitle">4 haneli PIN kodunu girin</div>
+          </div>
+
+          <div class="auth-top desktop-auth-top">
+            <div class="shield-wrap"><div class="shield-ring"></div><div class="shield-core">⛨</div></div>
+            <div class="auth-text"><div class="auth-title">PIN Access</div><div class="auth-subtitle">4 haneli güvenlik PIN kodunu girin</div></div>
+          </div>
+
+          <div class="pin-label">PIN Giriş Alanı</div>
+          <div class="pin-boxes" id="pinBoxes" aria-label="PIN giriş alanı">
+            <div class="pin-cell"><span></span></div>
+            <div class="pin-cell"><span></span></div>
+            <div class="pin-cell"><span></span></div>
+            <div class="pin-cell"><span></span></div>
+          </div>
+
+          <div id="statusText" class="status-text">PIN giriniz</div>
+
+          <div class="keypad" aria-label="Sayı tuş takımı">
+            <button class="key" data-key="1">1</button>
+            <button class="key" data-key="2">2</button>
+            <button class="key" data-key="3">3</button>
+            <button class="key" data-key="4">4</button>
+            <button class="key" data-key="5">5</button>
+            <button class="key" data-key="6">6</button>
+            <button class="key" data-key="7">7</button>
+            <button class="key" data-key="8">8</button>
+            <button class="key" data-key="9">9</button>
+            <button class="key key-soft" data-action="clear">Temizle</button>
+            <button class="key" data-key="0">0</button>
+            <button class="key key-soft" data-action="delete">Sil</button>
+          </div>
+
+          <p class="login-help">Şifrenizi unutursanız cihazdaki local storage temizlenmelidir.</p>
+        </main>
+      </div>
+    </section>
+
+    <section id="appScreen" class="screen app-screen hidden">
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-title">NETWORK PANEL</div>
+        </div>
+
+        <div class="topbar-center">
+          <input
+            id="searchInput"
+            class="input"
+            type="text"
+            placeholder="Port, birim veya personel ara..."
+          />
+        </div>
+
+        <div class="topbar-right">
+          <button class="btn danger" id="logoutBtn" type="button">Çıkış</button>
+          <button class="btn perf-toggle" id="btnPerformanceMode" type="button">
+            Performans: Kapalı
+          </button>
+
+          <div class="save-status-wrap">
+            <button
+              class="btn"
+              id="btnSaveNow"
+              type="button"
+              title="Verileri hemen kaydet"
+            >
+              Kaydet
+            </button>
+            <div class="save-status" id="saveStatus">Kaydedildi</div>
+          </div>
+
+          <details class="toolbar-menu">
+            <summary class="btn primary">Menü</summary>
+            <div class="menu-panel">
+              <button class="btn" id="btnAddPatchA">Patch A Ekle</button>
+              <button class="btn" id="btnAddPatchB">Patch B Ekle</button>
+              <button class="btn" id="btnExport">JSON Dışa Aktar</button>
+              <button class="btn" id="btnImport">JSON İçe Aktar</button>
+              <button class="btn" id="btnPrint">Yazdır</button>
+              <button class="btn danger" id="btnReset">Sıfırla</button>
+            </div>
+          </details>
+
+          <details class="toolbar-menu">
+            <summary class="btn">Filtre</summary>
+            <div class="menu-panel filter-panel">
+              <label class="menu-label" for="typeFilterSelect"
+                >Cihaz Türü</label
+              >
+              <select id="typeFilterSelect" class="input"></select>
+            </div>
+          </details>
+        </div>
+      </header>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span>Takılı Patch</span><strong id="statInstalled">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Kurulu Bağlantı</span><strong id="statMapped">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Boş Switch Port</span><strong id="statEmptySwitch">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>PC</span><strong id="statPC">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Yazıcı / Kamera</span><strong id="statPeripheral">0 / 0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Birim / Oda</span><strong id="statRooms">0</strong>
+        </div>
+      </section>
+
+      <section class="rack-card">
+        <div class="rack-header">
+          <h2>Rack Kabinet Görünümü</h2>
+          <p>
+            Kablo görünümü korunur. Patch A ve Patch B artık hem 48 port hem 24
+            port switchlere bağlanabilir.
+          </p>
+        </div>
+        <div class="rack-builder-toolbar">
+          <button type="button" class="btn ghost" id="addPatchBtn">
+            + Patch Ekle
+          </button>
+          <button type="button" class="btn primary" id="addSwitchBtn">
+            + Switch Ekle
+          </button>
+          <button type="button" class="btn" id="btnFloorPlans">
+            Kat Planlarını Görüntüle
+          </button>
+        </div>
+
+        <div class="topology-stage" id="topologyStage">
+          <div class="topology-zoom-controls" id="topologyZoomControls">
+            <button
+              type="button"
+              class="zoom-btn"
+              id="zoomOutBtn"
+              aria-label="Uzaklaştır"
+            >
+              −
+            </button>
+            <div class="topology-zoom-badge" id="topologyZoomLabel">100%</div>
+            <button
+              type="button"
+              class="zoom-btn"
+              id="zoomInBtn"
+              aria-label="Yakınlaştır"
+            >
+              +
+            </button>
+            <button
+              type="button"
+              class="zoom-btn fit"
+              id="zoomFitBtn"
+              aria-label="Ekrana sığdır"
+            >
+              Fit
+            </button>
+          </div>
+
+          <div class="topology-zoom-shell" id="topologyZoomShell">
+            <div class="topology-zoom-layer" id="topologyZoomLayer">
+              <svg id="cableSvg"></svg>
+              <div
+                id="rackBuilderContainer"
+                class="rack-builder-container"
+              ></div>
+            </div>
+          </div>
+
+          <div class="setup-modal-backdrop" id="rackDeviceModal" hidden>
+            <div class="setup-modal-card">
+              <div class="setup-modal-head">
+                <div>
+                  <div class="setup-modal-kicker">KABİNET KURULUMU</div>
+                  <h3 id="rackDeviceModalTitle">Yeni cihaz ekle</h3>
+                </div>
+                <button
+                  type="button"
+                  class="icon-btn"
+                  id="btnCloseRackDeviceModal"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div class="setup-modal-body">
+                <div class="form-grid">
+                  <label class="form-field">
+                    <span>Cihaz tipi</span>
+                    <input type="text" id="rackDeviceKindText" disabled />
+                  </label>
+
+                  <label class="form-field">
+                    <span>Başlık</span>
+                    <input
+                      type="text"
+                      id="rackDeviceTitle"
+                      placeholder="Örn: SWITCH 1"
+                    />
+                  </label>
+
+                  <label class="form-field">
+                    <span>Port sayısı</span>
+                    <select id="rackDevicePortCount">
+                      <option value="8">8 Port</option>
+                      <option value="16">16 Port</option>
+                      <option value="24" selected>24 Port</option>
+                      <option value="48">48 Port</option>
+                    </select>
+                  </label>
+
+                  <label class="form-field">
+                    <span>Kod prefix</span>
+                    <input
+                      type="text"
+                      id="rackDeviceCodePrefix"
+                      placeholder="Örn: SW1 veya A"
+                    />
+                  </label>
+
+                  <label class="form-field">
+                    <span>Renk stili</span>
+                    <select id="rackDeviceColorClass">
+                      <option value="cyan">Mavi</option>
+                      <option value="indigo">Lacivert</option>
+                      <option value="pink">Pembe</option>
+                      <option value="teal">Turkuaz</option>
+                      <option value="amber">Amber</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div class="setup-modal-actions">
+                <button
+                  type="button"
+                  class="btn ghost"
+                  id="btnCancelRackDeviceModal"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  type="button"
+                  class="btn primary"
+                  id="btnSaveRackDeviceModal"
+                >
+                  Kaydet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-grid">
+        <div class="panel-card">
+          <div class="section-head">
+            <h3>Bağlantı Listesi</h3>
+            <p>Kurulu hatlar ve boş patchler burada görünür</p>
+          </div>
+          <div id="connectionList" class="list-wrap"></div>
+        </div>
+
+        <div class="panel-card">
+          <div class="section-head">
+            <h3>Switch Özet Görünümü</h3>
+            <p>Bağlı patchleri birim ve personel bazında özetle</p>
+          </div>
+          <div class="room-filters">
+            <select id="floorFilter" class="input select-inline">
+              <option value="Tümü">Tümü</option>
+              <option value="Giriş Kat">Giriş Kat</option>
+              <option value="1. Kat">1. Kat</option>
+              <option value="2. Kat">2. Kat</option>
+              <option value="3. Kat">3. Kat</option>
+              <option value="Sistem Odası">Sistem Odası</option>
+            </select>
+            <input
+              id="roomSearch"
+              class="input"
+              type="text"
+              placeholder="Patch, birim veya personel ara..."
+            />
+          </div>
+          <div id="roomTopologyList" class="list-wrap"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-overlay hidden" id="portModal">
+      <div class="modal-card large">
+        <div class="modal-head">
+          <div>
+            <h3 id="modalTitle">Port Düzenle</h3>
+            <p id="modalSubtitle">Patch bilgisini düzenle</p>
+          </div>
+          <button class="icon-btn" id="btnCloseModal">✕</button>
+        </div>
+
+        <form id="portForm" class="form-grid">
+          <input type="hidden" id="currentPortId" />
+          <input type="hidden" id="currentLayer" />
+
+          <div class="form-group">
+            <label>Port Kodu</label>
+            <input id="portIdInput" class="input" type="text" readonly />
+          </div>
+
+          <div class="form-group">
+            <label>Katman</label>
+            <input id="layerInput" class="input" type="text" readonly />
+          </div>
+
+          <div class="form-group">
+            <label>Kat</label>
+            <select id="floorInput" class="input">
+              <option value="">Seç</option>
+              <option value="Giriş Kat">Giriş Kat</option>
+              <option value="1. Kat">1. Kat</option>
+              <option value="2. Kat">2. Kat</option>
+              <option value="3. Kat">3. Kat</option>
+              <option value="Sistem Odası">Sistem Odası</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Cihaz Türü</label>
+            <select id="typeInput" class="input"></select>
+          </div>
+
+          <div class="form-group">
+            <label>Birim / Oda</label>
+            <input
+              id="roomInput"
+              class="input"
+              type="text"
+              placeholder="Örn: Muhasebe veya A Blok 2. Kat"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Personel</label>
+            <input
+              id="userInput"
+              class="input"
+              type="text"
+              placeholder="Örn: Ahmet Yılmaz"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>IP Adresi</label>
+            <input
+              id="ipInput"
+              class="input"
+              type="text"
+              placeholder="Örn: 192.168.1.20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Bağlanacağı Switch Port</label>
+
+            <div class="connect-to-toolbar">
+              <select id="connectToInput" class="input"></select>
+              <button type="button" class="btn ghost" id="btnSuggestEmptyPort">
+                İlk Boş Portu Öner
+              </button>
+            </div>
+          </div>
+          <div id="connectToWarning" class="connect-warning hidden"></div>
+
+          <div class="form-group full">
+            <label>Not</label>
+            <textarea
+              id="noteInput"
+              class="input textarea"
+              placeholder="Açıklama veya not yaz..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full toggle-line" id="installedWrap">
+            <label class="toggle-label"
+              ><input id="installedInput" type="checkbox" /> Patch takılı</label
+            >
+            <label class="toggle-label"
+              ><input id="activeInput" type="checkbox" /> Port aktif</label
+            >
+          </div>
+
+          <div class="modal-actions full">
+            <button type="button" class="btn primary" id="btnSavePort">
+              Kaydet
+            </button>
+            <button type="button" class="btn" id="btnClearPort">
+              Bilgileri Temizle
+            </button>
+            <button type="button" class="btn danger hidden" id="btnRemovePatch">
+              Patch Kaldır
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="mappingModal">
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <h3>Bağlantı Kur / Değiştir</h3>
+            <p>Patch ile switch portunu eşleştir</p>
+          </div>
+          <button class="icon-btn" id="btnCloseMapping">✕</button>
+        </div>
+        <div class="form-grid single-col">
+          <div class="form-group">
+            <label>Kaynak Patch</label>
+            <select id="mapSourceSelect" class="input"></select>
+          </div>
+          <div class="form-group">
+            <label>Hedef Switch Port</label>
+            <select id="mapTargetSelect" class="input"></select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn primary" id="btnSaveMapping">
+              Bağlantıyı Kaydet
+            </button>
+            <button type="button" class="btn" id="btnClearMapping">
+              Bağlantıyı Temizle
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay hidden" id="quickConnectModal">
+      <div class="modal-card quick-connect-card">
+        <div class="modal-head">
+          <div>
+            <h3 id="quickConnectTitle">Hızlı Bağlama</h3>
+            <p>Boş bir switch portu seçip tek tıkla bağlayabilirsin.</p>
+          </div>
+          <button class="icon-btn" id="btnCloseQuickConnect">✕</button>
+        </div>
+
+        <div class="quick-connect-toolbar">
+          <input
+            id="quickConnectSearch"
+            class="input"
+            type="text"
+            placeholder="SW1-12 veya SW2-4 ara..."
+          />
+        </div>
+
+        <div id="quickConnectList" class="quick-connect-list"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" id="btnOpenFullPortModal">
+            Detaylı Formu Aç
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay hidden" id="appAlertModal">
+      <div class="modal-card disconnect-confirm-card app-alert-card">
+        <div class="modal-head">
+          <div>
+            <h3 id="appAlertHeading">Uyarı</h3>
+            <p id="appAlertSubheading">İşlem bilgisi</p>
+          </div>
+          <button type="button" class="icon-btn" id="appAlertClose">✕</button>
+        </div>
+
+        <div class="disconnect-confirm-body">
+          <div class="disconnect-confirm-icon" id="appAlertIcon">⚠️</div>
+          <div class="disconnect-confirm-text">
+            <strong id="appAlertTitle">Mesaj başlığı</strong>
+            <div id="appAlertMessage" class="disconnect-confirm-pair">
+              Mesaj içeriği burada görünecek.
+            </div>
+            <p id="appAlertDesc" class="occupied-switch-desc hidden"></p>
+          </div>
+        </div>
+
+        <div class="modal-actions" id="appAlertActions">
+          <button type="button" class="btn" id="appAlertCancel">İptal</button>
+          <button type="button" class="btn primary" id="appAlertOk">
+            Tamam
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal-overlay hidden" id="floorPlanModal">
+      <div class="modal-card floor-plan-modal-card">
+        <div class="modal-head">
+          <div>
+            <h3>Kat Planları</h3>
+            <p>Kat krokisini yükle, görüntüle ve ilgili birimlerin portlarını tek ekranda takip et.</p>
+          </div>
+          <button class="icon-btn" id="btnCloseFloorPlanModal">✕</button>
+        </div>
+
+        <div class="floor-plan-toolbar">
+          <select id="floorPlanFloorSelect" class="input select-inline">
+            <option value="Giriş Kat">Giriş Kat</option>
+            <option value="1. Kat">1. Kat</option>
+            <option value="2. Kat">2. Kat</option>
+            <option value="3. Kat">3. Kat</option>
+            <option value="Sistem Odası">Sistem Odası</option>
+          </select>
+          <input
+            id="floorPlanSearch"
+            class="input"
+            type="text"
+            placeholder="Birim, kullanıcı veya port ara..."
+          />
+          <input
+            type="file"
+            id="floorPlanImageInput"
+            accept="image/*"
+            class="hidden"
+          />
+          <button type="button" class="btn" id="btnUploadFloorPlan">Kat görseli yükle</button>
+          <button type="button" class="btn danger" id="btnRemoveFloorPlan">Görseli kaldır</button>
+        </div>
+
+        <div class="floor-plan-layout">
+          <div class="floor-plan-viewer" id="floorPlanViewer"></div>
+          <div class="floor-plan-side">
+            <div class="section-head floor-plan-side-head">
+              <h3>Kat Üzerindeki Birimler</h3>
+              <p>Port kutularına tıklayınca rack görünümünde ilgili porta gidilir.</p>
+            </div>
+            <div id="floorPlanCards" class="floor-plan-cards"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-tools-sheet" id="mobileToolsSheet" aria-hidden="true">
+      <div class="mobile-sheet-backdrop" data-mobile-close></div>
+      <div class="mobile-sheet-card">
+        <div class="mobile-sheet-head">
+          <div>
+            <h3>Hızlı Araçlar</h3>
+            <p>Mobil kullanım için kısaltılmış menü</p>
+          </div>
+          <button type="button" class="icon-btn" id="mobileToolsClose">
+            ✕
+          </button>
+        </div>
+        <div class="mobile-tools-content">
+          <div class="mobile-tools-search-row">
+            <input
+              id="mobileSearchInput"
+              class="input"
+              type="text"
+              placeholder="Port veya kullanıcı ara..."
+            />
+          </div>
+          <div class="mobile-tools-search-row">
+            <label class="menu-label" for="mobileTypeFilterSelect"
+              >Cihaz Türü</label
+            >
+            <select id="mobileTypeFilterSelect" class="input"></select>
+          </div>
+          <div class="mobile-tools-grid">
+            <button
+              type="button"
+              class="btn ghost"
+              data-proxy-click="addPatchBtn"
+            >
+              + Patch Ekle
+            </button>
+            <button
+              type="button"
+              class="btn primary"
+              data-proxy-click="addSwitchBtn"
+            >
+              + Switch Ekle
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnSaveNow">
+              Kaydet
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnPrint">
+              Yazdır
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnExport">
+              JSON Dışa Aktar
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnImport">
+              JSON İçe Aktar
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnAddPatchA">
+              Patch A Ekle
+            </button>
+            <button type="button" class="btn" data-proxy-click="btnAddPatchB">
+              Patch B Ekle
+            </button>
+            <button
+              type="button"
+              class="btn perf-toggle"
+              data-proxy-click="btnPerformanceMode"
+            >
+              Performans Modu
+            </button>
+            <button
+              type="button"
+              class="btn danger"
+              data-proxy-click="btnReset"
+            >
+              Sıfırla
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav
+      class="mobile-bottom-bar"
+      id="mobileBottomBar"
+      aria-label="Mobil alt menü"
+    >
+      <button type="button" class="mobile-tab active" data-mobile-view="rack">
+        <span class="mobile-tab-icon">▣</span>
+        <span class="mobile-tab-label">Rack</span>
+      </button>
+      <button type="button" class="mobile-tab" data-mobile-view="connections">
+        <span class="mobile-tab-icon">⇄</span>
+        <span class="mobile-tab-label">Bağlantılar</span>
+      </button>
+      <button type="button" class="mobile-tab" data-mobile-view="summary">
+        <span class="mobile-tab-icon">≣</span>
+        <span class="mobile-tab-label">Özet</span>
+      </button>
+      <button type="button" class="mobile-tab" data-mobile-view="tools">
+        <span class="mobile-tab-icon">☰</span>
+        <span class="mobile-tab-label">Menü</span>
+      </button>
+    </nav>
+
+    </section>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
