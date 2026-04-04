@@ -60,24 +60,83 @@ const TOPOLOGY_ZOOM_MIN = 0.1;
 const TOPOLOGY_ZOOM_MAX = 1.4;
 const TOPOLOGY_ZOOM_STEP = 0.1;
 
+const SHEET_API_URL =
+  "https://script.google.com/macros/s/AKfycbyXZ-h-O6K4YFW8FH__MsjITrM6BSjPUYbOIk65hRMkz0Gr-RfcjJ7yTRGiWDKNmgnp/exec";
+const STORAGE_KEY = "network-panel-data";
+
 const storageAPI = {
   async loadData() {
+    // 1) Önce online veriyi çek
     try {
-      const raw = localStorage.getItem("network-panel-data");
-      return raw ? JSON.parse(raw) : null;
+      const response = await fetch(SHEET_API_URL, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Load failed: ${response.status}`);
+      }
+
+      const onlineData = await response.json();
+
+      if (onlineData && typeof onlineData === "object") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(onlineData));
+        console.log("🌐 Online veri yüklendi");
+        return onlineData;
+      }
     } catch (err) {
-      console.error(err);
+      console.warn("Online load failed, local fallback kullanılacak:", err);
+    }
+
+    // 2) Online olmazsa local'den çek
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+
+      const localData = JSON.parse(raw);
+      console.log("💾 Local veri yüklendi");
+      return localData;
+    } catch (err) {
+      console.error("Local load error:", err);
       return null;
     }
   },
+
   async saveData(data) {
-    localStorage.setItem("network-panel-data", JSON.stringify(data));
-    return { ok: true };
+    // Önce local'e kaydet
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.error("Local save error:", err);
+    }
+
+    // Sonra online'a kaydet
+    try {
+      const response = await fetch(SHEET_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed: ${response.status}`);
+      }
+
+      console.log("🌐 Online save success");
+      return { ok: true };
+    } catch (err) {
+      console.warn("Online save failed, local kayıt kaldı:", err);
+      return { ok: false, error: String(err) };
+    }
   },
+
   async exportData(data) {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -86,32 +145,33 @@ const storageAPI = {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+
     return { ok: true };
   },
+
   async importData() {
     return new Promise((resolve) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = ".json,application/json";
+
       input.onchange = async () => {
         const file = input.files?.[0];
         if (!file) return resolve({ ok: false });
+
         try {
           const text = await file.text();
-          resolve({ ok: true, data: JSON.parse(text) });
+          const parsed = JSON.parse(text);
+
+          await this.saveData(parsed);
+
+          resolve({ ok: true, data: parsed });
         } catch (err) {
-          await showAppAlert({
-            heading: "İçe aktarma hatası",
-            subheading: "JSON dosyası okunamadı",
-            title: "Dosya açılamadı",
-            message: "Seçtiğin JSON dosyası okunamadı.",
-            desc: "Dosya bozuk olabilir ya da geçerli JSON formatında olmayabilir.",
-            type: "danger",
-            okText: "Tamam",
-          });
+          console.error("Import error:", err);
           resolve({ ok: false, error: String(err) });
         }
       };
+
       input.click();
     });
   },
@@ -1625,7 +1685,6 @@ function displayName(item) {
   return formatAssignment(item);
 }
 
-
 function formatAssignment(item) {
   const unit = (item.room || "").trim();
   const person = (item.user || "").trim();
@@ -1661,7 +1720,9 @@ function createPortCard(item) {
 
   if (isPatch(item)) {
     const icon = item.installed ? ICONS[dType] || "🔌" : "";
-    const patchStatus = item.connectedTo ? `Bağlı: ${item.connectedTo}` : "BOŞTA";
+    const patchStatus = item.connectedTo
+      ? `Bağlı: ${item.connectedTo}`
+      : "BOŞTA";
     const patchNote = (item.note || "").trim();
     const patchPreview = item.connectedTo
       ? `
@@ -1675,11 +1736,15 @@ function createPortCard(item) {
             <span class="patch-hover-label">Kullanıcı</span>
             ${(item.user || "-").trim() || "-"}
           </div>
-          ${patchNote ? `
+          ${
+            patchNote
+              ? `
           <div class="patch-hover-line">
             <span class="patch-hover-label">Not</span>
             ${patchNote}
-          </div>` : ""}
+          </div>`
+              : ""
+          }
           <div class="patch-hover-badge">${patchStatus}</div>
         </div>
       `
@@ -2047,7 +2112,13 @@ function renderConnectionList() {
   });
 }
 
-const FLOOR_OPTIONS = ["Giriş Kat", "1. Kat", "2. Kat", "3. Kat", "Sistem Odası"];
+const FLOOR_OPTIONS = [
+  "Giriş Kat",
+  "1. Kat",
+  "2. Kat",
+  "3. Kat",
+  "Sistem Odası",
+];
 
 function ensureFloorPlansState() {
   if (!state || typeof state !== "object") return {};
@@ -2128,7 +2199,8 @@ function renderFloorPlanCards() {
   list.innerHTML = "";
 
   if (!items.length) {
-    list.innerHTML = '<div class="floor-plan-card-empty">Bu kat için eşleşen birim, kullanıcı veya port bulunamadı.</div>';
+    list.innerHTML =
+      '<div class="floor-plan-card-empty">Bu kat için eşleşen birim, kullanıcı veya port bulunamadı.</div>';
     return;
   }
 
@@ -2136,7 +2208,8 @@ function renderFloorPlanCards() {
 
   items.forEach((item) => {
     const roomName = (item.room || "Birim atanmadı").trim() || "Birim atanmadı";
-    const userName = (item.user || "Kullanıcı atanmadı").trim() || "Kullanıcı atanmadı";
+    const userName =
+      (item.user || "Kullanıcı atanmadı").trim() || "Kullanıcı atanmadı";
     const key = `${roomName}__${userName}`;
 
     if (!grouped.has(key)) {
@@ -2151,11 +2224,18 @@ function renderFloorPlanCards() {
   });
 
   Array.from(grouped.values())
-    .sort((a, b) => `${a.roomName} ${a.userName}`.localeCompare(`${b.roomName} ${b.userName}`, "tr"))
+    .sort((a, b) =>
+      `${a.roomName} ${a.userName}`.localeCompare(
+        `${b.roomName} ${b.userName}`,
+        "tr",
+      ),
+    )
     .forEach((group) => {
       const card = document.createElement("div");
       card.className = "floor-plan-card";
-      const linkedCount = group.ports.filter((port) => Boolean(port.connectedTo)).length;
+      const linkedCount = group.ports.filter((port) =>
+        Boolean(port.connectedTo),
+      ).length;
       const emptyCount = group.ports.length - linkedCount;
 
       const chips = group.ports
@@ -2222,7 +2302,8 @@ async function handleFloorPlanImageUpload(event) {
 
   const reader = new FileReader();
   reader.onload = async () => {
-    ensureFloorPlansState()[floorSelect.value] = typeof reader.result === "string" ? reader.result : "";
+    ensureFloorPlansState()[floorSelect.value] =
+      typeof reader.result === "string" ? reader.result : "";
     renderFloorPlanModal();
     event.target.value = "";
     await persist();
@@ -2253,13 +2334,7 @@ function renderRoomTopology() {
 
   const filtered = connected.filter((item) => {
     if (floor !== "Tümü" && item.floor !== floor) return false;
-    const hay = [
-      item.room,
-      item.user,
-      item.connectedFrom,
-      item.id,
-      item.type,
-    ]
+    const hay = [item.room, item.user, item.connectedFrom, item.id, item.type]
       .join(" ")
       .toLowerCase();
 
@@ -3346,7 +3421,9 @@ function bindEvents() {
   }
   const btnFloorPlans = document.getElementById("btnFloorPlans");
   const floorPlanModal = document.getElementById("floorPlanModal");
-  const btnCloseFloorPlanModal = document.getElementById("btnCloseFloorPlanModal");
+  const btnCloseFloorPlanModal = document.getElementById(
+    "btnCloseFloorPlanModal",
+  );
   const floorPlanFloorSelect = document.getElementById("floorPlanFloorSelect");
   const floorPlanSearch = document.getElementById("floorPlanSearch");
   const floorPlanImageInput = document.getElementById("floorPlanImageInput");
@@ -3378,14 +3455,15 @@ function bindEvents() {
   }
 
   if (btnUploadFloorPlan && floorPlanImageInput) {
-    btnUploadFloorPlan.addEventListener("click", () => floorPlanImageInput.click());
+    btnUploadFloorPlan.addEventListener("click", () =>
+      floorPlanImageInput.click(),
+    );
     floorPlanImageInput.addEventListener("change", handleFloorPlanImageUpload);
   }
 
   if (btnRemoveFloorPlan) {
     btnRemoveFloorPlan.addEventListener("click", removeFloorPlanImage);
   }
-
 
   if (btnCloseRackDeviceModal) {
     btnCloseRackDeviceModal.addEventListener("click", closeRackDeviceModal);
